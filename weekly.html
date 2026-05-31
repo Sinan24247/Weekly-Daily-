@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Review</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c0b;--bg2:#0f1210;--bg3:#141a16;
+  --border:#1a2e22;--border2:#223a2b;
+  --accent:#1D9E75;--accent2:#5DCAA5;--accent3:#0F6E56;
+  --text:#c8d8cc;--text2:#7a9a85;--text3:#3d5a47;
+  --mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans)}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(29,158,117,.04) 39px,rgba(29,158,117,.04) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(29,158,117,.03) 39px,rgba(29,158,117,.03) 40px);pointer-events:none;z-index:0}
+.scan-line{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(29,158,117,.12);animation:scan 10s linear infinite;pointer-events:none;z-index:999}
+@keyframes scan{0%{top:-2px}100%{top:100vh}}
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.sys-id{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--accent);display:flex;align-items:center;gap:8px}
+.sys-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sys-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.08em}
+.nav-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;padding:4px 10px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;transition:border-color .2s,color .2s}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.nav-row{display:flex;align-items:center;gap:8px}
+
+.panel{border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;background:var(--bg2);margin-bottom:12px}
+.ph{font-size:9px;letter-spacing:.18em;color:var(--accent);font-family:var(--mono);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.ph-sub{color:var(--text3);font-size:9px}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.stat-card{border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;background:var(--bg2);text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(29,158,117,.04) 0%,transparent 60%);pointer-events:none}
+.stat-val{font-size:28px;font-weight:500;font-family:var(--mono);color:var(--text);line-height:1}
+.stat-lbl{font-size:9px;letter-spacing:.14em;color:var(--text3);font-family:var(--mono);margin-top:6px}
+.stat-sub{font-size:10px;color:var(--text2);margin-top:3px}
+
+/* HEATMAP */
+.heatmap-grid{display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;align-items:center}
+.hm-day-header{font-size:10px;font-family:var(--mono);color:var(--text3);text-align:center;padding:4px 0;letter-spacing:.06em}
+.hm-habit-label{font-size:11px;color:var(--text2);padding:4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-cell{height:28px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);transition:background .3s;cursor:default;display:flex;align-items:center;justify-content:center}
+.hm-cell.done{background:rgba(29,158,117,.35);border-color:var(--accent3)}
+.hm-cell.done::after{content:'✓';font-size:10px;color:var(--accent);font-family:var(--mono)}
+.hm-cell.partial{background:rgba(29,158,117,.12);border-color:var(--border2)}
+.hm-corner{height:28px}
+
+/* WEEK SCORE BAR */
+.score-row{display:grid;grid-template-columns:120px 1fr 36px;gap:8px;align-items:center;margin-bottom:6px}
+.score-label{font-size:11px;color:var(--text2)}
+.score-bar-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.score-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 3px rgba(29,158,117,.4))}
+.score-pct{font-size:10px;font-family:var(--mono);color:var(--text3);text-align:right}
+
+/* REVIEW INPUTS */
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.review-label{font-size:10px;letter-spacing:.1em;color:var(--text3);font-family:var(--mono);margin-bottom:8px}
+textarea.rv{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:.7rem .9rem;resize:vertical;min-height:90px;outline:none;line-height:1.6}
+textarea.rv:focus{border-color:var(--accent)}
+textarea.rv::placeholder{color:var(--text3)}
+
+/* NEXT WEEK */
+.next-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.focus-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:.65rem .9rem;outline:none}
+.focus-input:focus{border-color:var(--accent)}
+.focus-input::placeholder{color:var(--text3)}
+.focus-num{font-size:10px;font-family:var(--mono);color:var(--accent3);margin-bottom:5px}
+
+/* SCORE BADGE */
+.week-score-badge{display:flex;align-items:center;justify-content:center;gap:12px;padding:1.1rem;border:1px solid var(--border2);border-radius:12px;background:rgba(29,158,117,.05);margin-bottom:12px}
+.badge-ring{position:relative;width:72px;height:72px;flex-shrink:0}
+.badge-ring svg{width:72px;height:72px;transform:rotate(-90deg)}
+.badge-bg{fill:none;stroke:var(--border2);stroke-width:3}
+.badge-fg{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 4px rgba(29,158,117,.5))}
+.badge-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.badge-pct{font-size:18px;font-weight:500;font-family:var(--mono);color:var(--text);line-height:1}
+.badge-lbl{font-size:8px;color:var(--text3);font-family:var(--mono)}
+.badge-text{flex:1}
+.badge-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.badge-sub{font-size:11px;color:var(--text3);line-height:1.5}
+
+/* ACT BAR */
+.act-bar{display:flex;gap:10px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.jbtn{font-size:10px;padding:6px 13px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--mono);letter-spacing:.06em;transition:border-color .2s,color .2s}
+.jbtn:hover{border-color:var(--accent);color:var(--accent)}
+.jmsg{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.home-link{font-size:10px;padding:6px 13px;border:1px solid var(--border2);border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--mono);letter-spacing:.06em;transition:border-color .2s,color .2s;text-decoration:none;display:inline-block}
+.home-link:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="scan-line"></div>
+<div class="wrap">
+
+  <div class="top-bar">
+    <div class="sys-id"><span class="sys-dot"></span>// WEEKLY REVIEW</div>
+    <div class="nav-row">
+      <button class="nav-btn" onclick="shiftWeek(-1)">← prev</button>
+      <span class="sys-date" id="week-label"></span>
+      <button class="nav-btn" onclick="shiftWeek(1)">next →</button>
+    </div>
+  </div>
+
+  <!-- WEEK SCORE BADGE -->
+  <div class="week-score-badge">
+    <div class="badge-ring">
+      <svg viewBox="0 0 72 72"><circle class="badge-bg" cx="36" cy="36" r="30"/><circle class="badge-fg" id="badge-ring" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/></svg>
+      <div class="badge-num"><span class="badge-pct" id="badge-pct">0%</span><span class="badge-lbl">WEEK</span></div>
+    </div>
+    <div class="badge-text">
+      <div class="badge-title" id="badge-title">Lade Wochendaten…</div>
+      <div class="badge-sub" id="badge-sub"></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-val" id="st-streak">0</div><div class="stat-lbl">STREAK</div><div class="stat-sub">Tage</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-best">0</div><div class="stat-lbl">BEST DAY</div><div class="stat-sub" id="st-best-lbl">—</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-routines">0%</div><div class="stat-lbl">ROUTINE Ø</div><div class="stat-sub">diese Woche</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-goals">0%</div><div class="stat-lbl">GOALS Ø</div><div class="stat-sub">diese Woche</div></div>
+  </div>
+
+  <!-- HEATMAP -->
+  <div class="panel">
+    <div class="ph"><span>HABIT HEATMAP</span><span class="ph-sub" id="hm-week-sub"></span></div>
+    <div id="heatmap"></div>
+  </div>
+
+  <!-- HABIT SCORES -->
+  <div class="panel">
+    <div class="ph"><span>CONSISTENCY SCORE</span><span class="ph-sub">per habit · 7 days</span></div>
+    <div id="score-bars"></div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="panel">
+    <div class="ph">WEEKLY REVIEW</div>
+    <div class="review-grid">
+      <div>
+        <div class="review-label">WAS LIEF GUT?</div>
+        <textarea class="rv" id="rv-good" placeholder="> wins dieser woche…"></textarea>
+      </div>
+      <div>
+        <div class="review-label">WAS LIEF NICHT?</div>
+        <textarea class="rv" id="rv-bad" placeholder="> gaps & blockers…"></textarea>
+      </div>
+      <div>
+        <div class="review-label">LERNMOMENT</div>
+        <textarea class="rv" id="rv-learn" placeholder="> key insight…"></textarea>
+      </div>
+      <div>
+        <div class="review-label">ENERGIE / ZUSTAND</div>
+        <textarea class="rv" id="rv-energy" placeholder="> körperlich, mental, emotional…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEXT WEEK -->
+  <div class="panel">
+    <div class="ph">NEXT WEEK — FOCUS</div>
+    <div class="next-grid">
+      <div>
+        <div class="focus-num">01</div>
+        <input class="focus-input" id="nw1" placeholder="Hauptfokus…">
+      </div>
+      <div>
+        <div class="focus-num">02</div>
+        <input class="focus-input" id="nw2" placeholder="">
+      </div>
+      <div>
+        <div class="focus-num">03</div>
+        <input class="focus-input" id="nw3" placeholder="">
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="review-label" style="margin-bottom:8px">EINE SACHE DIE ALLES VERÄNDERT</div>
+      <input class="focus-input" id="nw-one" placeholder="> der eine Hebel für nächste Woche…" style="width:100%">
+    </div>
+  </div>
+
+  <div class="act-bar">
+    <a class="home-link" href="index.html">← daily</a>
+    <button class="jbtn" onclick="saveWeek()">save_week()</button>
+    <button class="jbtn" onclick="loadWeek()">load_week()</button>
+    <span class="jmsg" id="jmsg"></span>
+  </div>
+
+</div>
+
+<script>
+const DAYS_DE=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MONTHS_DE=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const CIRC_BADGE=188.5;
+
+let weekOffset=0; // 0 = current week
+
+function getConfig(){
+  return JSON.parse(localStorage.getItem('jv_config')||'null')||{
+    routine:[
+      {icon:'ti-run',name:'10k Steps'},
+      {icon:'ti-book',name:'15 S. lesen'},
+      {icon:'ti-book-2',name:'Journal'},
+      {icon:'ti-focus',name:'1h Deep Work'}
+    ],
+    goals:['Training / Hyrox','Lernen','Diplomarbeit','Haushalt','Vorlesung'],
+    schedStart:5,schedEnd:22
+  };
+}
+
+function getMondayOfWeek(offset){
+  const today=new Date();
+  const day=today.getDay();
+  const diffToMon=day===0?-6:1-day;
+  const mon=new Date(today);
+  mon.setDate(today.getDate()+diffToMon+offset*7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function dateKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function weekKey(mon){return 'jv_week_'+dateKey(mon);}
+
+function getWeekDays(mon){
+  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+
+function loadDayData(d){
+  const raw=localStorage.getItem('jv_day_'+dateKey(d));
+  if(!raw)return null;
+  try{return JSON.parse(raw);}catch{return null;}
+}
+
+function shiftWeek(dir){weekOffset+=dir;render();}
+
+function render(){
+  const config=getConfig();
+  const mon=getMondayOfWeek(weekOffset);
+  const days=getWeekDays(mon);
+  const sun=days[6];
+
+  // week label
+  document.getElementById('week-label').textContent=
+    days[0].getDate()+'. '+MONTHS_DE[days[0].getMonth()]+' — '+sun.getDate()+'. '+MONTHS_DE[sun.getMonth()]+' '+sun.getFullYear();
+  document.getElementById('hm-week-sub').textContent=
+    'KW '+getWeekNum(mon);
+
+  // load all day data
+  const dayData=days.map(d=>loadDayData(d));
+
+  // compute per-day routine completion
+  const rTotal=config.routine.length;
+  const dayRoutineScores=dayData.map(d=>{
+    if(!d)return null;
+    const done=(d.routine||[]).filter(Boolean).length;
+    return {done,total:rTotal,pct:rTotal>0?done/rTotal:0};
+  });
+
+  // compute per-day goal completion
+  const dayGoalScores=dayData.map(d=>{
+    if(!d)return null;
+    const goals=(d.goals||[]).filter(g=>g.t);
+    const done=goals.filter(g=>g.done).length;
+    const total=goals.length||config.goals.length;
+    return {done,total,pct:total>0?done/total:0};
+  });
+
+  // overall week score
+  const activeDays=dayRoutineScores.filter(Boolean);
+  const weekPct=activeDays.length>0
+    ?activeDays.reduce((s,d)=>s+d.pct,0)/activeDays.length
+    :0;
+
+  // badge
+  const pctInt=Math.round(weekPct*100);
+  document.getElementById('badge-pct').textContent=pctInt+'%';
+  document.getElementById('badge-ring').style.strokeDashoffset=(CIRC_BADGE*(1-weekPct)).toFixed(1);
+  document.getElementById('badge-title').textContent=weekOffset===0?'Laufende Woche':'Woche '+getWeekNum(mon)+' / '+mon.getFullYear();
+  document.getElementById('badge-sub').textContent=
+    activeDays.length+' von 7 Tagen mit Daten · '+pctInt+'% Routine-Durchschnitt';
+
+  // stats
+  const streak=calcStreak();
+  document.getElementById('st-streak').textContent=streak;
+  const bestIdx=dayRoutineScores.reduce((bi,s,i)=>s&&(!dayRoutineScores[bi]||s.pct>dayRoutineScores[bi].pct)?i:bi,0);
+  const bestDay=dayRoutineScores[bestIdx];
+  document.getElementById('st-best').textContent=bestDay?Math.round(bestDay.pct*100)+'%':'—';
+  document.getElementById('st-best-lbl').textContent=bestDay?DAYS_DE[days[bestIdx].getDay()]:'—';
+  const rAvg=activeDays.length?Math.round(activeDays.reduce((s,d)=>s+d.pct,0)/activeDays.length*100):0;
+  document.getElementById('st-routines').textContent=rAvg+'%';
+  const gActive=dayGoalScores.filter(Boolean);
+  const gAvg=gActive.length?Math.round(gActive.reduce((s,d)=>s+d.pct,0)/gActive.length*100):0;
+  document.getElementById('st-goals').textContent=gAvg+'%';
+
+  // heatmap
+  buildHeatmap(config,days,dayData,dayRoutineScores);
+
+  // score bars
+  buildScoreBars(config,days,dayData);
+
+  // load review if exists
+  loadWeek();
+}
+
+function buildHeatmap(config,days,dayData,dayScores){
+  const c=document.getElementById('heatmap');c.innerHTML='';
+  const grid=document.createElement('div');
+  grid.className='heatmap-grid';
+  grid.style.gridTemplateColumns=`120px repeat(7,1fr)`;
+
+  // header row
+  const corner=document.createElement('div');corner.className='hm-corner';grid.appendChild(corner);
+  days.forEach(d=>{
+    const h=document.createElement('div');h.className='hm-day-header';
+    h.textContent=DAYS_DE[d.getDay()]+' '+d.getDate();
+    grid.appendChild(h);
+  });
+
+  // routine rows
+  config.routine.forEach((r,ri)=>{
+    const lbl=document.createElement('div');lbl.className='hm-habit-label';
+    lbl.innerHTML=`<i class="ti ${r.icon}" style="color:var(--accent3);margin-right:5px;font-size:12px"></i>${r.name}`;
+    grid.appendChild(lbl);
+    days.forEach((d,di)=>{
+      const cell=document.createElement('div');cell.className='hm-cell';
+      const dd=dayData[di];
+      if(dd){
+        const done=dd.routine?.[ri]||false;
+        if(done)cell.classList.add('done');
+      }
+      grid.appendChild(cell);
+    });
+  });
+
+  // schedule fill row
+  const slbl=document.createElement('div');slbl.className='hm-habit-label';
+  slbl.innerHTML=`<i class="ti ti-calendar" style="color:var(--accent3);margin-right:5px;font-size:12px"></i>Schedule`;
+  grid.appendChild(slbl);
+  days.forEach((d,di)=>{
+    const cell=document.createElement('div');cell.className='hm-cell';
+    const dd=dayData[di];
+    if(dd&&dd.sched){
+      const blocks=Object.values(dd.sched).filter(s=>s.t);
+      const done=blocks.filter(s=>s.done).length;
+      if(blocks.length>0){
+        const pct=done/blocks.length;
+        if(pct>=1)cell.classList.add('done');
+        else if(pct>0)cell.classList.add('partial');
+      }
+    }
+    grid.appendChild(cell);
+  });
+
+  c.appendChild(grid);
+}
+
+function buildScoreBars(config,days,dayData){
+  const c=document.getElementById('score-bars');c.innerHTML='';
+  config.routine.forEach((r,ri)=>{
+    const daysWithData=dayData.filter(Boolean);
+    const done=daysWithData.filter(d=>d.routine?.[ri]).length;
+    const total=daysWithData.length;
+    const pct=total>0?Math.round(done/total*100):0;
+    const row=document.createElement('div');row.className='score-row';
+    row.innerHTML=`<span class="score-label"><i class="ti ${r.icon}" style="color:var(--accent3);margin-right:5px;font-size:11px"></i>${r.name}</span><div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%"></div></div><span class="score-pct">${pct}%</span>`;
+    c.appendChild(row);
+  });
+}
+
+function calcStreak(){
+  let streak=0;
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const data=loadDayData(d);
+    if(!data)break;
+    const config=getConfig();
+    const done=(data.routine||[]).filter(Boolean).length;
+    if(done===0)break;
+    streak++;
+  }
+  return streak;
+}
+
+function getWeekNum(d){
+  const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dayNum=date.getUTCDay()||7;
+  date.setUTCDate(date.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date-yearStart)/86400000)+1)/7);
+}
+
+function saveWeek(){
+  const mon=getMondayOfWeek(weekOffset);
+  const d={
+    good:document.getElementById('rv-good').value,
+    bad:document.getElementById('rv-bad').value,
+    learn:document.getElementById('rv-learn').value,
+    energy:document.getElementById('rv-energy').value,
+    nw1:document.getElementById('nw1').value,
+    nw2:document.getElementById('nw2').value,
+    nw3:document.getElementById('nw3').value,
+    nwOne:document.getElementById('nw-one').value
+  };
+  localStorage.setItem(weekKey(mon),JSON.stringify(d));
+  msg('saved ✓');
+}
+
+function loadWeek(){
+  const mon=getMondayOfWeek(weekOffset);
+  const raw=localStorage.getItem(weekKey(mon));
+  if(!raw)return;
+  try{
+    const d=JSON.parse(raw);
+    document.getElementById('rv-good').value=d.good||'';
+    document.getElementById('rv-bad').value=d.bad||'';
+    document.getElementById('rv-learn').value=d.learn||'';
+    document.getElementById('rv-energy').value=d.energy||'';
+    document.getElementById('nw1').value=d.nw1||'';
+    document.getElementById('nw2').value=d.nw2||'';
+    document.getElementById('nw3').value=d.nw3||'';
+    document.getElementById('nw-one').value=d.nwOne||'';
+  }catch(e){}
+}
+
+function msg(t){const el=document.getElementById('jmsg');el.textContent='> '+t;setTimeout(()=>el.textContent='',3000);}
+
+render();
+</script>
+</body>
+</html>
